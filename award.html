@@ -1,0 +1,271 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+	<meta http-equiv="Content-Language" content="zh-CN"/>  
+	<title>抽奖活动</title>
+	<script src="js/base64.js"></script>
+	<script src="js/jquery-3.2.1.min.js"></script>
+	<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+	<link rel="stylesheet" href="js/bootstrap.min.css">
+	<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+	<script src="js/bootstrap.min.js"></script>
+	<style type="text/css">
+	.right {
+		position: absolute;
+		left:52%;
+		top:22%;
+	}
+	.bg{  
+		background: url(img/bgimg.png) repeat fixed top ;
+		background-size:100%;
+	}
+	.cj_name{
+		position:relative;
+		text-align:center;
+		margin:0 auto;
+		width: 450px;
+		left:5%;
+		top:6%;
+	}
+	.hj_name{
+		color:white;
+		font-size:60px;
+		width: 500px;
+	}
+	h1 {
+		color:yellow;
+		font-size:120px;
+	}
+	.btp{
+		padding-top: 50px
+	}
+	label{
+		margin-right:30px
+	}
+	p{
+		color:black;
+		font-size:30px;
+	}
+	.btn{
+		position: relative;
+		margin: 8px;
+	}
+	.cj{
+		position: absolute;
+		left:8%;
+		top:30%;
+		width: 600px;
+		height:230px;
+		background-image: url(img/cj1.png);
+		background-repeat:no-repeat;
+	}
+	.select{
+		position: relative;
+		top: 16%;
+		left: 3%;
+		width: 100px;
+	}
+	#forbid {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translateX(-50%) translateY(-50%);
+	}
+</style>
+<script type="text/javascript">
+	$(document).ready(function(){
+		var nowDate = new Date();
+		var startDate = new Date('2018-01-18 20:00:00');
+		if (nowDate <= startDate) {
+			//禁止访问
+			$('#forbid').modal({
+				backdrop:'static',
+				keyboard: true,
+				show:true
+			});
+		}
+		
+
+		Array.prototype.indexOf = function(val) {
+			for (var i = 0; i < this.length; i++) {
+				if (this[i] == val) return i;
+			}
+			return -1;
+		};
+		Array.prototype.remove = function(val) {
+			var index = this.indexOf(val);
+			if (index > -1) {
+				this.splice(index, 1);
+			}
+		};
+		var checkValue;
+		var checkText;
+		var zero = 1;
+		var one = 5;
+		var two = 6;
+		var three = 20;
+		var four = 20;
+		//抽奖数据，以英文逗号分隔
+		var start = 1;
+		var end = 650;
+		var alldata = [];
+		var getdata = [];
+		var num = end-start;
+		for (var i = start; i <= end; i++) {
+			if (i<10){
+				i = "00"+i;
+			}else if(i>=10 && i<100){
+				i = "0"+i;
+			}
+			alldata.push(i);
+		}
+		var cycle = 50;
+		var timer;
+		var second;
+		var index;
+		var startLen;
+		var change = function(){
+			index = getRnd(0,num);
+			$("#num").text(alldata[index]);
+		}
+
+		var circle = function(){
+			if (checkValue == 0) {
+				second = setInterval(stop,5000);
+			}else{
+				second = setInterval(stop,500);
+			}
+		}
+
+		$("#start").click(function(){
+			$("#select_id").attr("disabled","disabled");
+			$("#start").attr("disabled","disabled");
+			$("#names").html("");
+			var level = $("#select_id").find("option:selected").text(); 
+			$("#names").append("<p>"+level+"</p>");
+			clearInterval(timer);
+				//随机数据变换速度，越小变换的越快
+				timer = setInterval(change,cycle);
+				var checkValue=$("#select_id").val();
+				startLen = getdata.length;
+				if (checkValue ==5) {
+					$("#stop").removeAttr("style");
+				}else {
+					circle();
+				}
+			});
+
+		var stop = function(){
+			var checkValue=$("#select_id").val();
+			if (checkValue == 0) {
+				alldata = Base.dncode;
+				num = alldata.length - 1;
+			}
+			index = getRnd(0,num);
+			var name = alldata[index];
+			getdata.push(name);
+			$("#names").append("<label>"+name+"</label>");
+			if (getdata.length%5 == 0) {
+				$("#names").append("<br>");
+			}
+			alldata.remove(name);
+			num = alldata.length-1;
+			if (checkValue == 4 || checkValue == "4") {
+				compare(four,startLen);
+			}else if (checkValue == 3 || checkValue == "3") {
+				compare(three,startLen);
+			}else if (checkValue ==2 || checkValue == "2") {
+				compare(two,startLen);
+			}else if (checkValue == 1 || checkValue == "1") {
+				compare(one,startLen);
+			}else if (checkValue == 0 || checkValue == "0") {
+				num = alldata.length - 1;
+				compare(zero,startLen);
+			}
+		}
+
+		$("#stop").click(function(){
+			$("#stop").attr("style","display:none");
+			$("#start").removeAttr("disabled");
+			$("#select_id").removeAttr("disabled");
+			clearInterval(timer);
+			var name = $("#num").text();
+			getdata.push(name);
+			$("#names").append("<label>"+name+"</label>");
+			alldata.remove(name);
+			num = alldata.length-1;
+		});
+
+		var compare = function(value,start){
+			if (getdata.length-start == value) {
+				clearInterval(second);
+				clearInterval(timer);
+				$("#select_id").removeAttr("disabled");
+				$("#num").text("抽奖");
+			}
+		}
+
+		var getRnd = function(min,max){
+			return parseInt(Math.random()*(max-min));
+		}
+
+		$("#select_id").change(function(){
+			checkText=$("#select_id").find("option:selected").text();  //获取Select选择的Text
+			checkValue=$("#select_id").val();  //获取Select选择的Value
+			$("#num").text(checkText);
+			$("#start").removeAttr("disabled");
+		});
+
+	});
+</script> 
+</head>   
+<body class="bg">
+	<div class="modal fade" tabindex="-1" role="dialog" id="forbid">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content" style="background-color: #e74c3c;">
+				<div class="modal-header text-center">
+					<h4 style="color: white">警告!!!</h4>
+				</div>
+				<div class="modal-body text-center">
+					<p style="color: white">活动时间未到，禁止访问！</p>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div>
+	<div class="container">
+		<div style="margin:0 auto">
+			<img src="img/title.png" class="img-rounded">
+		</div>
+		<div class="right">
+			<div><h2 style="color: white">获奖号码</h2></div>
+			<div class="hj_name" id="names">
+
+			</div>
+		</div>
+		<div class="text-center cj">
+			<div class="select">
+				<select id="select_id">
+					<option></option>
+					<option value="5">抽奖</option>
+					<option value="4">三等奖1</option>
+					<option value="3">三等奖2</option>
+					<option value="2">二等奖</option>
+					<option value="1">一等奖</option>
+					<option value="0">特等奖</option>
+				</select>
+			</div>
+			<!-- <img src="img/cj.png" class="img-rounded cj_img"> -->
+			<div class="cj_name">
+				<h1 id="num">抽奖</h1>
+				<div class="button-group text-center btp">
+					<button class="btn" id="start" accesskey="s" disabled="">开始(<U>S</U>)</button>
+					<button class="btn" id="stop" accesskey="o" style="display: none">停止(<U>O</U>)</button>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>
